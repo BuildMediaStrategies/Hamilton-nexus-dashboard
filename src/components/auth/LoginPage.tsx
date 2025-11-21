@@ -1,31 +1,36 @@
 import { FormEvent, useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 
 interface LoginPageProps {
   onAuthenticated: () => void;
+  isLoading?: boolean;
+  configError?: boolean;
+  authError?: string | null;
 }
 
-const ALLOWED_EMAILS = [
-  'jj@byjohnson.co.uk',
-  'myles@hamiltonrecruitment.co.uk'
-];
-
-export default function LoginPage({ onAuthenticated }: LoginPageProps) {
+export default function LoginPage({ onAuthenticated, isLoading: initialLoading = false, configError = false, authError = null }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(authError);
+  const [isLoading, setIsLoading] = useState(initialLoading);
 
   useEffect(() => {
-    const shouldRemember = localStorage.getItem('rememberMe');
-    if (shouldRemember === 'false') {
-      void supabase.auth.signOut();
-    }
-  }, []);
+    setIsLoading(initialLoading);
+  }, [initialLoading]);
+
+  useEffect(() => {
+    setError(authError);
+  }, [authError]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+
+    if (!isSupabaseConfigured) {
+      setError('Auth is not configured. Please contact support.');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -41,23 +46,6 @@ export default function LoginPage({ onAuthenticated }: LoginPageProps) {
     }
 
     if (data.session && data.user) {
-      const userEmail = data.user.email?.toLowerCase();
-
-      if (!userEmail || !ALLOWED_EMAILS.includes(userEmail)) {
-        await supabase.auth.signOut();
-        setError('This dashboard is invite-only.');
-        setIsLoading(false);
-        return;
-      }
-
-      localStorage.setItem('rememberMe', rememberMe.toString());
-
-      if (!rememberMe) {
-        window.addEventListener('beforeunload', async () => {
-          await supabase.auth.signOut();
-        });
-      }
-
       setIsLoading(false);
       setError(null);
       onAuthenticated();
@@ -81,17 +69,28 @@ export default function LoginPage({ onAuthenticated }: LoginPageProps) {
         >
           Sign in to Hamilton Nexus
         </h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {configError && (
+          <p className="text-sm text-red-600 mb-4 text-center">
+            Auth is not configured. Please contact support.
+          </p>
+        )}
+        <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
           <div className="space-y-1">
             <label className="block text-sm font-semibold text-black">
               Email
             </label>
             <input
               type="email"
+              name="hn-email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               className="w-full px-4 py-2 rounded-full border border-[#e5e5e5] text-sm focus:outline-none focus:ring-2 focus:ring-[#A30E15]"
               required
+              disabled={configError || isLoading}
+              autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
             />
           </div>
           <div className="space-y-1">
@@ -100,10 +99,16 @@ export default function LoginPage({ onAuthenticated }: LoginPageProps) {
             </label>
             <input
               type="password"
+              name="hn-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               className="w-full px-4 py-2 rounded-full border border-[#e5e5e5] text-sm focus:outline-none focus:ring-2 focus:ring-[#A30E15]"
               required
+              disabled={configError || isLoading}
+              autoComplete="new-password"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
             />
           </div>
           <div className="flex items-center gap-2">
@@ -113,6 +118,7 @@ export default function LoginPage({ onAuthenticated }: LoginPageProps) {
               checked={rememberMe}
               onChange={(event) => setRememberMe(event.target.checked)}
               className="w-4 h-4 text-[#A30E15] border-[#e5e5e5] rounded focus:ring-2 focus:ring-[#A30E15]"
+              disabled={configError || isLoading}
             />
             <label htmlFor="rememberMe" className="text-sm text-[#666666] font-medium cursor-pointer">
               Remember me
@@ -126,13 +132,12 @@ export default function LoginPage({ onAuthenticated }: LoginPageProps) {
           <button
             type="submit"
             className="w-full neumorphic-button px-4 py-2.5 font-semibold"
-            disabled={isLoading}
+            disabled={configError || isLoading}
           >
-            {isLoading ? 'Signing in...' : 'Sign in'}
+            {isLoading ? 'Loading...' : 'Sign in'}
           </button>
         </form>
       </div>
     </div>
   );
 }
-

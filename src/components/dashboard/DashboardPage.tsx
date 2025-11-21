@@ -1,5 +1,5 @@
 import { useEffect, useState, type ElementType } from 'react';
-import { Briefcase, ClipboardList, Users, Building2, Plus, TrendingUp, Receipt } from 'lucide-react';
+import { Briefcase, ClipboardList, Users, Building2, Plus, TrendingUp } from 'lucide-react';
 import { fetchJobs, type Job } from '@/lib/jobsApi';
 
 interface StatCardProps {

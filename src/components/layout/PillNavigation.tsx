@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Briefcase, Users, Building2, ClipboardList, FileText, Receipt, ChartBar as BarChart3, Settings, Bell, LogOut } from 'lucide-react';
 
 interface PillNavigationProps {
@@ -19,14 +20,46 @@ const navItems = [
 ];
 
 export function PillNavigation({ activePage, onNavigate, userEmail, onLogout }: PillNavigationProps) {
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   const initials = userEmail
     .split('@')[0]
     .slice(0, 2)
     .toUpperCase();
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setUserMenuOpen(false);
+      }
+    }
+
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [userMenuOpen]);
+
+  const handleLogout = () => {
+    setUserMenuOpen(false);
+    onLogout();
+  };
+
   return (
     <nav className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-full px-2 sm:px-4">
-      <div className="neumorphic-pill flex items-center justify-between px-3 sm:px-6 h-[70px] max-w-[95vw] mx-auto overflow-x-auto">
+      <div className="neumorphic-pill flex items-center justify-between px-3 sm:px-6 h-[70px] max-w-[95vw] mx-auto overflow-visible">
         <div className="flex items-center flex-shrink-0">
           <button
             onClick={() => onNavigate('dashboard')}
@@ -58,7 +91,7 @@ export function PillNavigation({ activePage, onNavigate, userEmail, onLogout }: 
           </button>
         </div>
 
-        <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 overflow-x-auto flex-1 justify-center mx-2 sm:mx-4">
+        <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 overflow-x-auto flex-1 min-w-0 justify-center mx-2 sm:mx-4">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activePage === item.id;
@@ -90,11 +123,11 @@ export function PillNavigation({ activePage, onNavigate, userEmail, onLogout }: 
             <span className="absolute top-1 right-1 w-2 h-2 bg-[#A30E15] rounded-full"></span>
           </button>
 
-          <div className="relative group">
+          <div className="relative" ref={menuRef}>
             <button
               type="button"
               role="button"
-              onClick={() => onNavigate('settings')}
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
               className="flex items-center gap-1 sm:gap-2 hover:bg-[#A30E15] hover:text-white px-1 sm:px-2 py-1 rounded-full transition-colors cursor-pointer"
             >
               <div className="w-8 h-8 sm:w-9 sm:h-9 border border-[#e5e5e5] rounded-full bg-[#f5f5f5] flex items-center justify-center">
@@ -102,19 +135,20 @@ export function PillNavigation({ activePage, onNavigate, userEmail, onLogout }: 
               </div>
             </button>
 
-            <div className="absolute right-0 mt-2 w-56 neumorphic-card border border-[#e5e5e5] bg-white rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 shadow-lg">
-              <div className="p-4 border-b border-[#e5e5e5]">
-                <p className="font-semibold text-black">Account</p>
-                <p className="text-xs text-[#666666] font-normal">{userEmail}</p>
+            {userMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 neumorphic-card border border-[#e5e5e5] bg-white p-2 rounded-2xl shadow-sm z-50">
+                <div className="text-xs text-[#666666] px-3 py-2 font-semibold truncate">
+                  {userEmail}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-[#f5f5f5] text-sm font-semibold text-black flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
               </div>
-              <button
-                onClick={onLogout}
-                className="w-full flex items-center gap-2 px-4 py-3 text-[#000000] hover:bg-[#A30E15] hover:text-white transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </button>
-            </div>
+            )}
           </div>
         </div>
       </div>
