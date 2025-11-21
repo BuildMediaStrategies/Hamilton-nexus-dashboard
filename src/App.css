@@ -1,0 +1,198 @@
+/* Forge - Black & White Design System */
+
+#root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  color: #000000;
+  font-weight: 700;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #000000;
+  color: #ffffff;
+  border: 2px solid #000000;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: all 200ms;
+}
+
+.btn-primary:hover {
+  background-color: #1a1a1a;
+}
+
+.btn-primary:disabled {
+  background-color: #e5e5e5;
+  color: #737373;
+  border-color: #e5e5e5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: all 200ms;
+}
+
+.btn-secondary:hover {
+  background-color: #f5f5f5;
+}
+
+/* Cards */
+.card {
+  background-color: #ffffff;
+  border: 2px solid #2d2d2d;
+  border-radius: 4px;
+  transition: border-color 200ms;
+}
+
+.card:hover {
+  border-color: #000000;
+}
+
+/* Status Badges */
+.badge-complete {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.badge-in-progress {
+  background-color: #737373;
+  color: #ffffff;
+}
+
+.badge-pending {
+  background-color: #e5e5e5;
+  color: #000000;
+}
+
+.badge-overdue {
+  background-color: #000000;
+  color: #ffffff;
+  border: 2px solid #ef4444;
+}
+
+.badge-high {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.badge-medium {
+  background-color: #737373;
+  color: #ffffff;
+}
+
+.badge-low {
+  background-color: #e5e5e5;
+  color: #000000;
+}
+
+/* Inputs */
+input, textarea, select {
+  background-color: #ffffff;
+  color: #000000;
+  border: 2px solid #2d2d2d;
+  border-radius: 4px;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-width: 3px;
+  border-color: #000000;
+  outline: none;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #737373;
+}
+
+/* AI Features - Blue/Purple Gradient */
+.ai-feature {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: #ffffff;
+}
+
+.ai-icon {
+  color: #3b82f6;
+}
+
+/* Brutalist Design */
+.brutalist-border {
+  border: 2px solid #2d2d2d;
+  border-radius: 4px;
+}
+
+.brutalist-shadow {
+  box-shadow: 4px 4px 0 #000000;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+}
+
+th {
+  color: #737373;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+td {
+  color: #000000;
+  border-top: 1px solid #e5e5e5;
+}
+
+tr:hover {
+  background-color: #f5f5f5;
+}
+
+/* Modals */
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border: 2px solid #000000;
+  border-radius: 4px;
+}
+
+/* Toasts */
+.toast-success {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.toast-error {
+  background-color: #000000;
+  color: #ffffff;
+  border: 2px solid #ef4444;
+}
+
+.toast-warning {
+  background-color: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
+  border-left: 4px solid #eab308;
+}
+
+/* Empty States */
+.empty-state {
+  color: #737373;
+}
+
+.empty-state-heading {
+  color: #000000;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
