@@ -5,7 +5,7 @@ import { DashboardPage } from './components/dashboard/DashboardPage';
 import { RolesPage } from './components/roles/RolesPage';
 import { CandidatesPage } from './components/candidates/CandidatesPage';
 import { ClientsPage } from './components/clients/ClientsPage';
-import { SurveysPage } from './components/surveys/SurveysPage';
+import { DiaryPage } from './components/diary/DiaryPage';
 import { DocumentsPage } from './components/documents/DocumentsPage';
 import { InvoicesPage } from './components/invoices/InvoicesPage';
 import { ReportsPage } from './components/reports/ReportsPage';
@@ -135,7 +135,7 @@ function App() {
           {activePage === 'roles' && <RolesPage />}
           {activePage === 'candidates' && <CandidatesPage />}
           {activePage === 'clients' && <ClientsPage />}
-          {activePage === 'surveys' && <SurveysPage />}
+          {activePage === 'diary' && <DiaryPage />}
           {activePage === 'documents' && <DocumentsPage />}
           {activePage === 'invoices' && <InvoicesPage />}
           {activePage === 'reports' && <ReportsPage />}
