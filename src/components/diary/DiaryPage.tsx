@@ -9,6 +9,7 @@ import {
   Priority,
   ChecklistItem
 } from '@/lib/diaryApi';
+import { supabase } from '@/lib/supabaseClient';
 
 export function DiaryPage() {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
@@ -19,18 +20,44 @@ export function DiaryPage() {
   const [newChecklistItem, setNewChecklistItem] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadEntries();
+    checkAuthAndLoadEntries();
   }, []);
+
+  const checkAuthAndLoadEntries = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        setIsAuthenticated(false);
+        setIsLoading(false);
+        return;
+      }
+
+      setIsAuthenticated(true);
+      await loadEntries();
+    } catch (err) {
+      console.error('Failed to check authentication:', err);
+      setError('Failed to verify authentication. Please try refreshing the page.');
+      setIsAuthenticated(false);
+      setIsLoading(false);
+    }
+  };
 
   const loadEntries = async () => {
     try {
-      setIsLoading(true);
+      setError(null);
       const data = await fetchDiaryEntries();
       setEntries(data);
-    } catch (error) {
-      console.error('Failed to load diary entries:', error);
+    } catch (err) {
+      console.error('Failed to load diary entries:', err);
+      setError('Failed to load diary entries. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -59,36 +86,106 @@ export function DiaryPage() {
 
     try {
       setIsSubmitting(true);
-      await createDiaryEntry({
+      setError(null);
+      const result = await createDiaryEntry({
         content: newEntry,
         entry_type: entryType,
         priority,
         checklist: checklistItems
       });
+
+      if (!result) {
+        setError('Failed to create diary entry. Please check your authentication and try again.');
+        return;
+      }
+
       setNewEntry('');
       setEntryType('note');
       setPriority('medium');
       setChecklistItems([]);
       await loadEntries();
-    } catch (error) {
-      console.error('Failed to create diary entry:', error);
+    } catch (err) {
+      console.error('Failed to create diary entry:', err);
+      setError('Failed to create diary entry. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleToggleChecklistItem = async (entry: DiaryEntry, itemId: string) => {
-    const updatedChecklist = entry.checklist.map(item =>
+    const checklist = Array.isArray(entry.checklist) ? entry.checklist : [];
+    const updatedChecklist = checklist.map(item =>
       item.id === itemId ? { ...item, completed: !item.completed } : item
     );
 
     try {
-      await updateDiaryEntryChecklist(entry.id, updatedChecklist);
+      setError(null);
+      const result = await updateDiaryEntryChecklist(entry.id, updatedChecklist);
+
+      if (!result) {
+        setError('Failed to update checklist. Please try again.');
+        return;
+      }
+
       await loadEntries();
-    } catch (error) {
-      console.error('Failed to update checklist:', error);
+    } catch (err) {
+      console.error('Failed to update checklist:', err);
+      setError('Failed to update checklist. Please try again.');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1
+              className="text-2xl sm:text-3xl font-black"
+              style={{
+                background: 'linear-gradient(135deg, #A30E15 0%, #780A0F 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
+              Diary
+            </h1>
+            <p className="text-[#666666] mt-1 font-medium">Activity log and notes</p>
+          </div>
+        </div>
+        <div className="neumorphic-card border border-[#e5e5e5] bg-white p-8 text-center">
+          <p className="text-[#666666] font-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1
+              className="text-2xl sm:text-3xl font-black"
+              style={{
+                background: 'linear-gradient(135deg, #A30E15 0%, #780A0F 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
+              Diary
+            </h1>
+            <p className="text-[#666666] mt-1 font-medium">Activity log and notes</p>
+          </div>
+        </div>
+        <div className="neumorphic-card border border-[#e5e5e5] bg-white p-8 text-center">
+          <p className="text-black font-semibold mb-2">Please log in to use the diary.</p>
+          <p className="text-[#666666] font-medium text-sm">You need to be authenticated to view and create diary entries.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -108,6 +205,12 @@ export function DiaryPage() {
           <p className="text-[#666666] mt-1 font-medium">Activity log and notes</p>
         </div>
       </div>
+
+      {error && (
+        <div className="neumorphic-card border border-[#A30E15] bg-white p-4">
+          <p className="text-[#A30E15] font-semibold text-sm">{error}</p>
+        </div>
+      )}
 
       <div className="neumorphic-card border border-[#e5e5e5] bg-white p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -265,11 +368,7 @@ export function DiaryPage() {
       </div>
 
       <div className="space-y-4">
-        {isLoading ? (
-          <div className="neumorphic-card border border-[#e5e5e5] bg-white p-8 text-center">
-            <p className="text-[#666666] font-medium">Loading entries...</p>
-          </div>
-        ) : entries.length === 0 ? (
+        {entries.length === 0 ? (
           <div className="neumorphic-card border border-[#e5e5e5] bg-white">
             <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
               <div className="neumorphic-icon-box p-6 mb-6">
@@ -315,7 +414,7 @@ export function DiaryPage() {
                 </div>
               </div>
               <p className="text-black font-medium whitespace-pre-wrap mb-3">{entry.content}</p>
-              {entry.checklist && entry.checklist.length > 0 && (
+              {Array.isArray(entry.checklist) && entry.checklist.length > 0 && (
                 <div className="mt-4 space-y-2">
                   <div className="text-sm font-semibold text-black mb-2">Checklist</div>
                   {entry.checklist.map((item) => (
@@ -325,7 +424,7 @@ export function DiaryPage() {
                     >
                       <input
                         type="checkbox"
-                        checked={item.completed}
+                        checked={item.completed || false}
                         onChange={() => handleToggleChecklistItem(entry, item.id)}
                         className="w-4 h-4 rounded border-[#e5e5e5] cursor-pointer"
                       />
@@ -336,7 +435,7 @@ export function DiaryPage() {
                             : 'text-black'
                         }`}
                       >
-                        {item.text}
+                        {item.text || ''}
                       </span>
                     </div>
                   ))}

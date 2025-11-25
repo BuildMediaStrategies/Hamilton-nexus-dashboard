@@ -27,6 +27,12 @@ export interface CreateDiaryEntryPayload {
 }
 
 export async function fetchDiaryEntries(): Promise<DiaryEntry[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from('diary_entries')
     .select('*')
@@ -34,17 +40,23 @@ export async function fetchDiaryEntries(): Promise<DiaryEntry[]> {
 
   if (error) {
     console.error('Error fetching diary entries:', error);
-    throw error;
+    return [];
   }
 
-  return (data ?? []) as DiaryEntry[];
+  return (data ?? []).map((entry: any) => ({
+    ...entry,
+    entry_type: (entry.entry_type || 'note') as EntryType,
+    priority: (entry.priority || 'medium') as Priority,
+    checklist: Array.isArray(entry.checklist) ? entry.checklist : []
+  }));
 }
 
-export async function createDiaryEntry(payload: CreateDiaryEntryPayload): Promise<DiaryEntry> {
+export async function createDiaryEntry(payload: CreateDiaryEntryPayload): Promise<DiaryEntry | null> {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error('User not authenticated');
+    console.error('User not authenticated');
+    return null;
   }
 
   const { data, error } = await supabase
@@ -52,36 +64,63 @@ export async function createDiaryEntry(payload: CreateDiaryEntryPayload): Promis
     .insert({
       user_id: user.id,
       content: payload.content,
-      entry_type: payload.entry_type,
-      priority: payload.priority,
-      checklist: payload.checklist
+      entry_type: payload.entry_type || 'note',
+      priority: payload.priority || 'medium',
+      checklist: Array.isArray(payload.checklist) ? payload.checklist : []
     })
     .select('*')
     .single();
 
   if (error) {
     console.error('Error creating diary entry:', error);
-    throw error;
+    return null;
   }
 
-  return data as DiaryEntry;
+  if (!data) {
+    return null;
+  }
+
+  return {
+    ...data,
+    entry_type: (data.entry_type || 'note') as EntryType,
+    priority: (data.priority || 'medium') as Priority,
+    checklist: Array.isArray(data.checklist) ? data.checklist : []
+  };
 }
 
 export async function updateDiaryEntryChecklist(
   entryId: string,
   checklist: ChecklistItem[]
-): Promise<DiaryEntry> {
+): Promise<DiaryEntry | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    console.error('User not authenticated');
+    return null;
+  }
+
+  const safeChecklist = Array.isArray(checklist) ? checklist : [];
+
   const { data, error } = await supabase
     .from('diary_entries')
-    .update({ checklist })
+    .update({ checklist: safeChecklist })
     .eq('id', entryId)
     .select('*')
     .single();
 
   if (error) {
     console.error('Error updating diary entry checklist:', error);
-    throw error;
+    return null;
   }
 
-  return data as DiaryEntry;
+  if (!data) {
+    return null;
+  }
+
+  return {
+    ...data,
+    entry_type: (data.entry_type || 'note') as EntryType,
+    priority: (data.priority || 'medium') as Priority,
+    checklist: Array.isArray(data.checklist) ? data.checklist : []
+  };
 }

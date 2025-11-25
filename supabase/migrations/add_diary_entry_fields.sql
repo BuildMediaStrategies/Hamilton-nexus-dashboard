@@ -4,13 +4,27 @@ ADD COLUMN IF NOT EXISTS entry_type TEXT NOT NULL DEFAULT 'note',
 ADD COLUMN IF NOT EXISTS priority TEXT NOT NULL DEFAULT 'medium',
 ADD COLUMN IF NOT EXISTS checklist JSONB NOT NULL DEFAULT '[]'::jsonb;
 
--- Add check constraint for entry_type
-ALTER TABLE diary_entries
-ADD CONSTRAINT check_entry_type CHECK (entry_type IN ('note', 'task'));
+-- Add check constraint for entry_type (if not exists)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'check_entry_type'
+  ) THEN
+    ALTER TABLE diary_entries
+    ADD CONSTRAINT check_entry_type CHECK (entry_type IN ('note', 'task'));
+  END IF;
+END $$;
 
--- Add check constraint for priority
-ALTER TABLE diary_entries
-ADD CONSTRAINT check_priority CHECK (priority IN ('low', 'medium', 'high'));
+-- Add check constraint for priority (if not exists)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'check_priority'
+  ) THEN
+    ALTER TABLE diary_entries
+    ADD CONSTRAINT check_priority CHECK (priority IN ('low', 'medium', 'high'));
+  END IF;
+END $$;
 
 -- Create index on entry_type for filtering
 CREATE INDEX IF NOT EXISTS idx_diary_entries_entry_type ON diary_entries(entry_type);

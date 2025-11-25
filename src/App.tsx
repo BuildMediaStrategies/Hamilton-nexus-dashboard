@@ -12,6 +12,7 @@ import { ReportsPage } from './components/reports/ReportsPage';
 import { SettingsPage } from './components/settings/SettingsPage';
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 import LoginPage from '@/components/auth/LoginPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const ALLOWED_EMAILS = [
   'jj@buildmediastrategies.com',
@@ -122,29 +123,31 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <PillNavigation
-        activePage={activePage}
-        onNavigate={setActivePage}
-        userEmail={session.user.email ?? 'User'}
-        onLogout={handleLogout}
-      />
-      <main className="pt-24">
-        <div className="max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8">
-          {activePage === 'dashboard' && <DashboardPage onNavigate={setActivePage} />}
-          {activePage === 'roles' && <RolesPage />}
-          {activePage === 'candidates' && <CandidatesPage />}
-          {activePage === 'clients' && <ClientsPage />}
-          {activePage === 'diary' && <DiaryPage />}
-          {activePage === 'documents' && <DocumentsPage />}
-          {activePage === 'invoices' && <InvoicesPage />}
-          {activePage === 'reports' && <ReportsPage />}
-          {activePage === 'settings' && (
-            <SettingsPage userEmail={session.user.email ?? 'User'} />
-          )}
-        </div>
-      </main>
-    </div>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-white">
+        <PillNavigation
+          activePage={activePage}
+          onNavigate={setActivePage}
+          userEmail={session.user.email ?? 'User'}
+          onLogout={handleLogout}
+        />
+        <main className="pt-24">
+          <div className="max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8">
+            {activePage === 'dashboard' && <DashboardPage onNavigate={setActivePage} />}
+            {activePage === 'roles' && <RolesPage />}
+            {activePage === 'candidates' && <CandidatesPage />}
+            {activePage === 'clients' && <ClientsPage />}
+            {activePage === 'diary' && <DiaryPage />}
+            {activePage === 'documents' && <DocumentsPage />}
+            {activePage === 'invoices' && <InvoicesPage />}
+            {activePage === 'reports' && <ReportsPage />}
+            {activePage === 'settings' && (
+              <SettingsPage userEmail={session.user.email ?? 'User'} />
+            )}
+          </div>
+        </main>
+      </div>
+    </ErrorBoundary>
   );
 }
 
