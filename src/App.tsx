@@ -10,7 +10,6 @@ import { DocumentsPage } from './components/documents/DocumentsPage';
 import { InvoicesPage } from './components/invoices/InvoicesPage';
 import { ReportsPage } from './components/reports/ReportsPage';
 import { SettingsPage } from './components/settings/SettingsPage';
-import { SurveysPage } from './components/surveys/SurveysPage';
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 import LoginPage from '@/components/auth/LoginPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -142,7 +141,6 @@ function App() {
             {activePage === 'documents' && <DocumentsPage />}
             {activePage === 'invoices' && <InvoicesPage />}
             {activePage === 'reports' && <ReportsPage />}
-            {activePage === 'test' && <SurveysPage />}
             {activePage === 'settings' && (
               <SettingsPage userEmail={session.user.email ?? 'User'} />
             )}
