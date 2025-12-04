@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Briefcase, Users, Building2, BookText, FileText, Receipt, ChartBar as BarChart3, Settings, Bell, LogOut } from 'lucide-react';
+import { Briefcase, Users, Building2, BookText, FileText, Receipt, ChartBar as BarChart3, Settings, Bell, LogOut, TestTube } from 'lucide-react';
 
 interface PillNavigationProps {
   activePage: string;
@@ -16,6 +16,7 @@ const navItems = [
   { id: 'documents', label: 'Documents', icon: FileText },
   { id: 'invoices', label: 'Invoices', icon: Receipt },
   { id: 'reports', label: 'Reports', icon: BarChart3 },
+  { id: 'test', label: 'Test Sync', icon: TestTube },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
